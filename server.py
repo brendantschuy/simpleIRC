@@ -1,32 +1,7 @@
 import socket
 import threading
 
-PORT = 5432
-SERVER = '127.0.0.1'
-FULL_ADDRESS = (SERVER, PORT)
-HEADER = 64
-OP_LENGTH = 4
-FORMAT = "utf-8"
-
-JOIN_SERVER = "0001"
-SEND_MESSAGE = "0002"
-JOIN_ROOM = "0003"
-NAME_CHANGE = "0004"
-DISCONNECT = "0005"
-CREATE_ROOM = "0006"
-SEND_TO_ROOM = "0007"
-LEAVE_ROOM = "0008"
-PRIVATE_MESSAGE = "0009"
-LIST_ROOMS = "0010"
-LIST_MEMBERS = "0011"
-LIST_ONLINE = "0012"
-
-SERVER_CRASH = "XXXX"
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-server.bind(FULL_ADDRESS)
+from config import *
 
 clients = []
 rooms = {}
@@ -68,7 +43,8 @@ def leaveRoom(activeRooms, room, client):
     try:
         rooms[room].remove(client)
         client.send(f"You left the room {room}".encode(FORMAT))
-        return activeRooms.remove(room)
+        activeRooms.remove(room)
+        return activeRooms
     except:
         client.send(f"You are not in the room {room}.".encode(FORMAT))
         return activeRooms
@@ -189,19 +165,23 @@ def handleClient(conn, addr):
     conn.close()
 
 def start():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(FULL_ADDRESS)
+
     server.listen()
-    print(f"[LISTENING] Server is listening on {SERVER}")
+    print(f"[STARTUP] Server is listening on {SERVER}")
     while True:
         try:
             conn, addr = server.accept()
             thread = threading.Thread(target=handleClient, args=(conn, addr))
             thread.start()
-            print(f"[NEW CONNECTION] active connections = {threading.activeCount() - 1}")
+            print(f"[NEW USER] active connections = {threading.activeCount() - 1}")
         except:
             # mainly handle SIGINTS
             print("\nServer crashed... 😵😵😵")
             broadcast(SERVER_CRASH.encode(FORMAT))
             exit()
 
-print("[STARTING] Starting server...")
+print("[STARTUP] Starting server...")
 start()

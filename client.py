@@ -2,28 +2,7 @@ import socket
 import select
 import sys
 
-PORT = 5432
-SERVER = '127.0.0.1'
-ADDR = (SERVER, PORT)
-HEADER = 64
-FORMAT = "utf-8"
-SERVER = "127.0.0.1"
-
-# list of ops
-SET_USERNAME = "0001"
-SEND_MESSAGE = "0002"
-JOIN_ROOM = "0003"
-NAME_CHANGE = "0004"
-DISCONNECT = "0005"
-CREATE_ROOM = "0006"
-SEND_TO_ROOM = "0007"
-LEAVE_ROOM = "0008"
-PRIVATE_MESSAGE = "0009"
-LIST_ROOMS = "0010"
-LIST_MEMBERS = "0011"
-LIST_ONLINE = "0012"
-
-SERVER_CRASH = "XXXX"
+from config import *
 
 OPS_MAP = {
     "!join" : JOIN_ROOM,
@@ -80,10 +59,10 @@ def decodeOp(msg):
         raise "OOPS"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect(ADDR)
+server.connect(FULL_ADDRESS)
 
 user = input("Enter a username: ")
-send(user, SET_USERNAME)
+send(user, JOIN_SERVER)
 
 print("> ", end='')
 
